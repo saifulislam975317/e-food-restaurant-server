@@ -28,8 +28,33 @@ async function run() {
     await client.connect();
 
     const eFoodCollection = client.db("eFoodDb").collection("eFoodData");
+    const foodReviewsCollection = client.db("eFoodDb").collection("ratings");
+    const foodCartCollection = client.db("eFoodDb").collection("cart");
+
     app.get("/menu", async (req, res) => {
       const result = await eFoodCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/reviews", async (req, res) => {
+      const result = await foodReviewsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cart = req.body;
+
+      const result = await foodCartCollection.insertOne(cart);
+      res.send(result);
+    });
+
+    app.get("/cart", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        return [];
+      }
+      const query = { email: email };
+      const result = await foodCartCollection.find(query).toArray();
       res.send(result);
     });
 
