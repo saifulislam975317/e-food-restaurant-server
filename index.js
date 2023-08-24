@@ -84,6 +84,32 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const filterMenu = { _id: new ObjectId(id) };
+      const result = await menuCollection.findOne(filterMenu);
+      res.send(result);
+    });
+
+    app.put("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("update id", id);
+      const updateItems = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updateItems.name,
+          category: updateItems.category,
+          price: updateItems.price,
+          recipe: updateItems.recipe,
+          image: updateItems.image,
+        },
+      };
+      const result = await menuCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
     // reviews related api
     app.get("/reviews", async (req, res) => {
       const result = await foodReviewsCollection.find().toArray();
