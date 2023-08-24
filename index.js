@@ -28,7 +28,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const eFoodCollection = client.db("eFoodDb").collection("eFoodData");
+    const menuCollection = client.db("eFoodDb").collection("eFoodData");
     const foodReviewsCollection = client.db("eFoodDb").collection("ratings");
     const foodCartCollection = client.db("eFoodDb").collection("cart");
     const userCollection = client.db("eFoodDb").collection("users");
@@ -66,7 +66,21 @@ async function run() {
     // menu related api
 
     app.get("/menu", async (req, res) => {
-      const result = await eFoodCollection.find().toArray();
+      const result = await menuCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/menu", verifyJwt, async (req, res) => {
+      const newItem = req.body;
+      const result = await menuCollection.insertOne(newItem);
+      res.send(result);
+    });
+
+    // delete menu item api
+    app.delete("/menu/:id", async (req, res) => {
+      const id = req.params.id;
+      const filterMenu = { _id: new ObjectId(id) };
+      const result = await menuCollection.deleteOne(filterMenu);
       res.send(result);
     });
 
@@ -103,6 +117,7 @@ async function run() {
     app.delete("/cart/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
+      console.log("cart query", query);
       const result = await foodCartCollection.deleteOne(query);
       res.send(result);
     });
@@ -110,7 +125,7 @@ async function run() {
     // user information save to database
     app.post("/users", async (req, res) => {
       const user = req.body;
-      console.log("new user", user.email);
+
       const query = { email: user.email };
       const existingUser = await userCollection.findOne(query);
       if (existingUser) {
@@ -147,9 +162,9 @@ async function run() {
 
     app.get("/users/admin/:email", verifyJwt, async (req, res) => {
       const email = req.params.email;
-      console.log("normal email", email);
+
       const decodedEmail = req.decoded.email;
-      console.log("decoded email", decodedEmail);
+
       if (email !== decodedEmail) {
         return res
           .status(403)
