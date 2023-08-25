@@ -164,6 +164,7 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
+    // admin related api
 
     app.delete("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
@@ -201,11 +202,20 @@ async function run() {
       const result = { admin: user?.role === "admin" };
       res.send(result);
     });
+
+    app.get("/admin-stats", async (req, res) => {
+      const products = await menuCollection.estimatedDocumentCount();
+      const users = await userCollection.estimatedDocumentCount();
+
+      res.send({
+        products,
+        users,
+      });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log(" You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
